@@ -1,7 +1,8 @@
 set -e
 export APT_LISTCHANGES_FRONTEND=none
 export DEBIAN_FRONTEND=noninteractive
-cd /github/home
+
+#cd /github/home
 echo Install dependencies.
 apt-get update > /dev/null 2>&1
 apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential \
