@@ -32,13 +32,15 @@ jobs:
           
           # Mount the artifacts directory as /artifacts in the container
           dockerRunArgs: |
-            --volume "${PWD}/artifacts:/artifacts"
+            --volume "${PWD}:/artifacts"
             
           # The shell to run commands with in the container
           shell: /bin/sh
           
           install: |
+            cd /artifacts
             echo "hello"
+            ls -la
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
@@ -46,8 +48,6 @@ jobs:
             echo "Produced artifact" >> /artifacts/buildlog.txt
 
       - name: Show the artifact
-        # Items placed in /artifacts in the container will be in
-        # ${PWD}/artifacts on the host.
         run: |
           ls -la
-          ls -al "${PWD}/artifacts"
+          
