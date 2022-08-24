@@ -38,7 +38,7 @@ jobs:
           shell: /bin/sh
           
           install: |
-            cd /artifacts
+            cd /artifacts/
             echo "hello"
             ls -la
 
