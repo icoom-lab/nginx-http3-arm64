@@ -53,6 +53,7 @@ jobs:
             echo "Fetch nginx and nginx-quic source code"
             apt-get install dpkg-dev -y
             apt-get source nginx
+            ls -la
             mv nginx-* nginx
             hg clone -b quic https://hg.nginx.org/nginx-quic
 
