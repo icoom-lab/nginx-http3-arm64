@@ -38,14 +38,14 @@ jobs:
           shell: /bin/sh
           
           install: |
-            cd /artifacts/
-            echo "hello"
-            ls -la
+            apt update -y
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
             uname -a
             echo "Produced artifact" >> /artifacts/buildlog.txt
+            cd /artifacts/
+            ls -la
 
       - name: Show the artifact
         run: |
