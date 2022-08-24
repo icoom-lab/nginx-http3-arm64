@@ -26,10 +26,6 @@ jobs:
           # a GitHub package registry.
           githubToken: ${{ github.token }}
           
-           # Create an artifacts directory
-          setup: |
-            mkdir -p "${PWD}/artifacts"
-          
           # Mount the artifacts directory as /artifacts in the container
           dockerRunArgs: |
             --volume "${PWD}:/artifacts"
@@ -43,11 +39,10 @@ jobs:
           # Set an output parameter `uname` for use in subsequent steps
           run: |
             uname -a
-            echo "Produced artifact" >> /artifacts/buildlog.txt
+            set -e
+            export APT_LISTCHANGES_FRONTEND=none
+            export DEBIAN_FRONTEND=noninteractive
             cd /artifacts/
-            ls -la
-            chmod +x build.sh
-            ./build.sh
 
       - name: Show the artifact
         run: |
