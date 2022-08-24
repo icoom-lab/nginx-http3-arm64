@@ -10,10 +10,6 @@ jobs:
     name: arch64
     steps:
       - uses: actions/checkout@v2.1.0
-      
-      - name: Show folder content
-        run: |
-          ls -la
 
       - uses: uraimo/run-on-arch-action@v2
         name: Run commands
@@ -43,6 +39,9 @@ jobs:
             export APT_LISTCHANGES_FRONTEND=none
             export DEBIAN_FRONTEND=noninteractive
             cd /artifacts/
+            echo Install dependencies.
+            apt-get update -y
+            apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy wget
 
       - name: Show the artifact
         run: |
