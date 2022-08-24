@@ -20,13 +20,28 @@ jobs:
           # Not required, but speeds up builds by storing container images in
           # a GitHub package registry.
           githubToken: ${{ github.token }}
+          
+           # Create an artifacts directory
+          setup: |
+            mkdir -p "${PWD}/artifacts"
+          
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}/artifacts:/artifacts"
+            
+          # The shell to run commands with in the container
+          shell: /bin/sh
+          
+          install: |
+            apt install git -y
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
             uname -a
-            echo ::set-output name=uname::$(uname -a)
+            echo "Produced artifact" >> /artifacts/buildlog.txt
 
-      - name: Get the output
-        # Echo the `uname` output parameter from the `runcmd` step
+      - name: Show the artifact
+        # Items placed in /artifacts in the container will be in
+        # ${PWD}/artifacts on the host.
         run: |
-          echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
+          ls -al "${PWD}/artifacts"
