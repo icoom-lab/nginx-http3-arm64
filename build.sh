@@ -2,14 +2,14 @@ set -e
 export APT_LISTCHANGES_FRONTEND=none
 export DEBIAN_FRONTEND=noninteractive
 
-#cd /github/home
+cd /artifacts
 echo Install dependencies.
 apt-get update > /dev/null 2>&1
 apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential \
 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy \
 wget > /dev/null 2>&1
 wget -qO /etc/apt/trusted.gpg.d/nginx_signing.asc https://nginx.org/keys/nginx_signing.key
-echo -e 'deb https://deb.debian.org/debian bookworm main contrib non-free\ndeb https://deb.debian.org/debian-security bookworm-security main contrib non-free\ndeb https://deb.debian.org/debian bookworm-updates main contrib non-free\ndeb-src https://nginx.org/packages/mainline/debian bullseye nginx' \
+echo -e 'deb https://deb.debian.org/debian bullseye main contrib non-free\ndeb https://deb.debian.org/debian-security bullseye-security main contrib non-free\ndeb https://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb-src https://nginx.org/packages/mainline/debian bullseye nginx' \
 > /etc/apt/sources.list
 echo -e 'Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900' \
 > /etc/apt/preferences.d/99nginx
@@ -60,18 +60,18 @@ dpkg-buildpackage -b > /dev/null 2>&1
 cd ..
 cp nginx_*.deb nginx.deb
 hash=$(sha256sum nginx.deb | awk '{print $1}')
-patch=$(cat /github/workspace/patch)
-minor=$(cat /github/workspace/minor)
-if [[ $hash != $(cat /github/workspace/hash) ]]; then
-  echo $hash > /github/workspace/hash
+patch=$(cat /artifacts/patch)
+minor=$(cat /artifacts/minor)
+if [[ $hash != $(cat /artifacts/hash) ]]; then
+  echo $hash > /artifacts/hash
   if [[ $GITHUB_EVENT_NAME == push ]]; then
     patch=0
-    minor=$(($(cat /github/workspace/minor)+1))
-    echo $minor > /github/workspace/minor
+    minor=$(($(cat /artifacts/minor)+1))
+    echo $minor > /artifacts/minor
   else
-    patch=$(($(cat /github/workspace/patch)+1))
+    patch=$(($(cat /artifacts/patch)+1))
   fi
-  echo $patch > /github/workspace/patch
+  echo $patch > /artifacts/patch
   change=1
   echo This is a new version.
 else
