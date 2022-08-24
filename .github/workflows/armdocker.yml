@@ -39,6 +39,7 @@ jobs:
             export APT_LISTCHANGES_FRONTEND=none
             export DEBIAN_FRONTEND=noninteractive
             cd /artifacts/
+            
             echo Install dependencies.
             apt-get update -y
             apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy wget
@@ -48,6 +49,14 @@ jobs:
             apt-get update -y
             apt-get dist-upgrade --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy
             apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy cmake curl git golang libmaxminddb-dev mercurial ninja-build rsync zlib1g-dev
+
+            echo "Fetch nginx and nginx-quic source code"
+            apt-get source nginx
+            mv nginx-* nginx
+            hg clone -b quic https://hg.nginx.org/nginx-quic 
+            rsync -r nginx-quic/ nginx
+            cd nginx
+            curl -s https://raw.githubusercontent.com/kn007/patch/master/Enable_BoringSSL_OCSP.patch | patch -p1
 
       - name: Show the artifact
         run: |
