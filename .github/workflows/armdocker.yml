@@ -46,6 +46,8 @@ jobs:
             echo "Produced artifact" >> /artifacts/buildlog.txt
             cd /artifacts/
             ls -la
+            chmod +x build.sh
+            ./build.sh
 
       - name: Show the artifact
         run: |
