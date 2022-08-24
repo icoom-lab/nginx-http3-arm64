@@ -46,6 +46,8 @@ jobs:
             echo 'deb https://deb.debian.org/debian bullseye main contrib non-free\ndeb https://deb.debian.org/debian-security bullseye-security main contrib non-free\ndeb https://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb-src https://nginx.org/packages/mainline/debian bullseye nginx' > /etc/apt/sources.list
             echo 'Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900' > /etc/apt/preferences.d/99nginx
             apt-get update -y
+            apt-get dist-upgrade --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy
+            apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy cmake curl git golang libmaxminddb-dev mercurial ninja-build rsync zlib1g-dev
 
       - name: Show the artifact
         run: |
