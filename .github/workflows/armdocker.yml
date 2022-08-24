@@ -32,7 +32,7 @@ jobs:
           
           # Mount the artifacts directory as /artifacts in the container
           dockerRunArgs: |
-            --volume "${PWD}/artifacts:/artifacts"
+            --volume "${PWD}:/artifacts"
             
           # The shell to run commands with in the container
           shell: /bin/sh
