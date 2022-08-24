@@ -15,7 +15,7 @@ jobs:
         id: runcmd
         with:
           arch: armv7
-          distro: ubuntu18.04
+          distro: bullseye
 
           # Not required, but speeds up builds by storing container images in
           # a GitHub package registry.
@@ -33,6 +33,7 @@ jobs:
           shell: /bin/sh
           
           install: |
+            apt update -y
             apt install git -y
 
           # Set an output parameter `uname` for use in subsequent steps
