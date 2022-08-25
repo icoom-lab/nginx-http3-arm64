@@ -51,11 +51,13 @@ jobs:
             apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy cmake curl git golang libmaxminddb-dev mercurial ninja-build rsync zlib1g-dev > /dev/null 2>&1
 
             echo "Fetch nginx and nginx-quic source code"
-            apt-get install dpkg-dev -y
+            sudo apt-get install dpkg-dev -y
             apt-get source nginx
             ls -la
             mv nginx-* nginx
             hg clone -b quic https://hg.nginx.org/nginx-quic
+            rsync -r nginx-quic/ nginx
+            cd nginx
 
       - name: Show the artifact
         run: |
