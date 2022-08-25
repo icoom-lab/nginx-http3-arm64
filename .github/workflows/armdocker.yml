@@ -88,8 +88,13 @@ jobs:
             ls -la
             apt-get install \
             --yes $(dpkg-checkbuilddeps 2>&1 | sed -e 's/dpkg-checkbuilddeps:\serror:\sUnmet build dependencies: //g' -e  's/[\(][^)]*[\)] //g')
-            dpkg-buildpackage -b
+            dpkg-buildpackage -b > /dev/null 2>&1
 
       - name: Show the artifact
         run: |
           ls -la
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ${{ github.workspace }}/*.deb
