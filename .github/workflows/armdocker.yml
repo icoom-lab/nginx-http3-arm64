@@ -30,7 +30,7 @@ jobs:
           shell: /bin/sh
           
           install: |
-            apt update -y
+            apt update -y > /dev/null 2>&1
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
@@ -89,10 +89,6 @@ jobs:
             apt-get install \
             --yes $(dpkg-checkbuilddeps 2>&1 | sed -e 's/dpkg-checkbuilddeps:\serror:\sUnmet build dependencies: //g' -e  's/[\(][^)]*[\)] //g')
             dpkg-buildpackage -b > /dev/null 2>&1
-
-      - name: Show the artifact
-        run: |
-          ls -la
 
       - uses: actions/upload-artifact@v3
         with:
