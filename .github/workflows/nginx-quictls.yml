@@ -54,7 +54,7 @@ jobs:
 
             echo Fetch nginx-quic source code.
             apt-get install dpkg-dev -y > /dev/null 2>&1
-            apt-get install libpcre3-dev -y
+            apt-get install libpcre3-dev -y > /dev/null 2>&1
             hg clone -b quic https://hg.nginx.org/nginx-quic > /dev/null 2>&1
               
             echo Fetch quictls source code.
@@ -92,12 +92,12 @@ jobs:
             --without-http_upstream_keepalive_module --without-http_upstream_least_conn_module \
             --without-http_upstream_random_module --without-http_upstream_zone_module \
             --with-openssl=modules/openssl \
-            --with-openssl-opt="enable-ec_nistp_64_gcc_128 enable-ktls enable-weak-ssl-ciphers"
+            --with-openssl-opt="enable-ec_nistp_64_gcc_128 enable-ktls enable-weak-ssl-ciphers" \
+            > /dev/null 2>&1
             
-            make -j$(nproc)
+            make -j$(nproc) > /dev/null 2>&1
             cp objs/nginx ..
             cd ..
-            ls -la
 
       - uses: actions/upload-artifact@v3
         with:
