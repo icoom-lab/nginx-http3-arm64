@@ -54,11 +54,9 @@ jobs:
 
             echo Fetch nginx-quic source code.
             apt-get install dpkg-dev -y > /dev/null 2>&1
+            apt-get install libpcre3-dev -y
             hg clone -b quic https://hg.nginx.org/nginx-quic > /dev/null 2>&1
-            
-            wget https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.40/pcre2-10.40.zip
-            unzip pcre2-10.40.zip
-            
+              
             echo Fetch quictls source code.
             mkdir nginx-quic/modules
             cd nginx-quic/modules
@@ -81,7 +79,7 @@ jobs:
             --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
             --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
             --user=www-data --group=www-data \
-            --with-file-aio --with-threads --with-pcre=/artifacts/pcre2-10.40 --with-http_sub_module \
+            --with-file-aio --with-threads --with-pcre-jit --with-http_sub_module \
             --with-http_ssl_module --with-http_v2_module --with-http_v3_module \
             --without-select_module --without-poll_module \
             --without-http_access_module --without-http_autoindex_module \
