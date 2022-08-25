@@ -1,0 +1,104 @@
+name: Nginx arm quictls
+
+on:
+  workflow_dispatch:
+
+jobs:
+  aarch64:
+    runs-on: ubuntu-18.04
+    name: build
+    steps:
+      - uses: actions/checkout@v2.1.0
+
+      - uses: uraimo/run-on-arch-action@v2
+        name: Run commands
+        id: runcmd
+        with:
+          arch: aarch64
+          distro: bullseye
+
+          # Not required, but speeds up builds by storing container images in
+          # a GitHub package registry.
+          githubToken: ${{ github.token }}
+          
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}:/artifacts"
+            
+          # The shell to run commands with in the container
+          shell: /bin/sh
+          
+          install: |
+            apt update -y > /dev/null 2>&1
+
+          # Set an output parameter `uname` for use in subsequent steps
+          run: |
+            uname -a
+            set -e
+            export APT_LISTCHANGES_FRONTEND=none
+            export DEBIAN_FRONTEND=noninteractive
+            cd /artifacts/
+            
+            echo Install dependencies.
+            apt-get update -y > /dev/null 2>&1
+            apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential \
+            -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy \
+            ca-certificates > /dev/null 2>&1
+            apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy wget > /dev/null 2>&1
+            wget -qO /etc/apt/trusted.gpg.d/nginx_signing.asc https://nginx.org/keys/nginx_signing.key
+            echo 'deb https://deb.debian.org/debian bullseye main contrib non-free\ndeb https://deb.debian.org/debian-security bullseye-security main contrib non-free\ndeb https://deb.debian.org/debian bullseye-updates main contrib non-free\ndeb-src https://nginx.org/packages/mainline/debian bullseye nginx' > /etc/apt/sources.list
+            echo 'Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900' > /etc/apt/preferences.d/99nginx
+            apt-get update -y > /dev/null 2>&1
+            apt-get dist-upgrade --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy > /dev/null 2>&1
+            apt-get install --allow-change-held-packages --allow-downgrades --allow-remove-essential -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -fy cmake curl git golang libmaxminddb-dev mercurial ninja-build rsync zlib1g-dev > /dev/null 2>&1
+
+            echo Fetch nginx-quic source code.
+            apt-get install dpkg-dev -y > /dev/null 2>&1
+            hg clone -b quic https://hg.nginx.org/nginx-quic > /dev/null 2>&1
+            
+            echo Fetch quictls source code.
+            mkdir nginx-quic/modules
+            cd nginx-quic/modules
+            git clone --depth 1 https://github.com/quictls/openssl > /dev/null 2>&1
+            
+            echo Fetch additional dependencies.
+            git clone --depth 1 --recursive https://github.com/google/ngx_brotli > /dev/null 2>&1
+            git clone --depth 1 https://github.com/leev/ngx_http_geoip2_module > /dev/null 2>&1
+            git clone --depth 1 https://github.com/openresty/headers-more-nginx-module > /dev/null 2>&1
+            echo Build nginx.
+            cd ..
+            
+            auto/configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx \
+            --add-module=modules/ngx_brotli --add-module=modules/ngx_http_geoip2_module \
+            --add-module=modules/headers-more-nginx-module --conf-path=/etc/nginx/nginx.conf \
+            --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log \
+            --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock \
+            --http-client-body-temp-path=/var/cache/nginx/client_temp \
+            --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+            --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+            --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+            --user=www-data --group=www-data \
+            --with-file-aio --with-threads --with-pcre-jit --with-http_sub_module \
+            --with-http_ssl_module --with-http_v2_module --with-http_v3_module \
+            --without-select_module --without-poll_module \
+            --without-http_access_module --without-http_autoindex_module \
+            --without-http_browser_module --without-http_charset_module \
+            --without-http_empty_gif_module --without-http_limit_conn_module \
+            --without-http_memcached_module --without-http_mirror_module \
+            --without-http_referer_module --without-http_split_clients_module \
+            --without-http_scgi_module --without-http_ssi_module \
+            --without-http_upstream_hash_module --without-http_upstream_ip_hash_module \
+            --without-http_upstream_keepalive_module --without-http_upstream_least_conn_module \
+            --without-http_upstream_random_module --without-http_upstream_zone_module \
+            --with-openssl=modules/openssl \
+            --with-openssl-opt="enable-ec_nistp_64_gcc_128 enable-ktls enable-weak-ssl-ciphers"
+            
+            make -j$(nproc)
+            cp objs/nginx ..
+            cd ..
+            ls -la
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ${{ github.workspace }}/nginx
